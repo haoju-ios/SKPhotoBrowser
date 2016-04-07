@@ -64,6 +64,8 @@ import UIKit
      - Returns: the view to animate to
      */
     optional func viewForPhoto(browser: SKPhotoBrowser, index: Int) -> UIView?
+    
+    optional func didClickOnCustomBtn(photoBrowser: SKPhotoBrowser,currentPhotoIndex: Int )
 }
 
 public let SKPHOTO_LOADING_DID_END_NOTIFICATION = "photoLoadingDidEndNotification"
@@ -93,12 +95,13 @@ public class SKPhotoBrowser: UIViewController, UIScrollViewDelegate {
     var screenRatio: CGFloat { return screenWidth / screenHeight }
     
     // custom abilities
-    public var displayAction: Bool = true
+    public var displayAction: Bool = false
     public var shareExtraCaption: String? = nil
     public var actionButtonTitles: [String]?
     public var displayToolbar: Bool = true
+    public var displayBottomToolbar: Bool = false
     public var displayCounterLabel: Bool = true
-    public var displayBackAndForwardButton: Bool = true
+    public var displayBackAndForwardButton: Bool = false
     public var disableVerticalSwipe: Bool = false
     public var displayDeleteButton = false
     public var displayCloseButton = true // default is true
@@ -123,6 +126,9 @@ public class SKPhotoBrowser: UIViewController, UIScrollViewDelegate {
     private var toolPreviousButton: UIBarButtonItem!
     private var toolActionButton: UIBarButtonItem!
     private var toolNextButton: UIBarButtonItem!
+    private var bottomToolBar: UIToolbar!
+    private var bottomToolCenterButton: UIBarButtonItem!
+    private var bottomToolRightButton: UIBarButtonItem!
     private var pagingScrollView: UIScrollView!
     private var panGesture: UIPanGestureRecognizer!
     // MARK: close button
@@ -276,6 +282,18 @@ public class SKPhotoBrowser: UIViewController, UIScrollViewDelegate {
             toolBar.hidden = true
         }
         
+        // bottomToolbar
+        bottomToolBar = UIToolbar.init(frame: frameForBottomToolbarAtOrientation())
+        bottomToolBar.backgroundColor = UIColor.clearColor()
+        bottomToolBar.clipsToBounds = true
+        bottomToolBar.translucent = true
+        bottomToolBar.setBackgroundImage(UIImage(), forToolbarPosition: .Any, barMetrics: .Default)
+        view.addSubview(bottomToolBar)
+        
+        if !displayBottomToolbar {
+            bottomToolBar.hidden = true
+        }
+        
         // arrows:back
         let previousBtn = UIButton(type: .Custom)
         let previousImage = UIImage(named: "SKPhotoBrowser.bundle/images/btn_common_back_wh", inBundle: bundle, compatibleWithTraitCollection: nil) ?? UIImage()
@@ -312,6 +330,26 @@ public class SKPhotoBrowser: UIViewController, UIScrollViewDelegate {
         setSettingDeleteButton()
         setSettingCustomCloseButton()
         setSettingCustomDeleteButton()
+        
+        // bottomToolbar: save Images
+        let saveImagesBtn = UIButton(type: .Custom)
+        let saveImagesImage = UIImage(named: "SKPhotoBrowser.bundle/images/btn_common_download", inBundle: bundle, compatibleWithTraitCollection: nil) ?? UIImage()
+        saveImagesBtn.frame = CGRect(x: 0, y: 0, width: 44, height: 44)
+        //        saveImagesBtn.imageEdgeInsets = UIEdgeInsetsMake(13.25, 17.25, 13.25, 17.25)
+        saveImagesBtn.setImage(saveImagesImage, forState: .Normal)
+        saveImagesBtn.addTarget(self, action: Selector("saveImagesToPhotoAlbum"), forControlEvents: .TouchUpInside)
+        saveImagesBtn.contentMode = .Center
+        bottomToolCenterButton = UIBarButtonItem(customView: saveImagesBtn)
+        
+        // bottomToolbar: custom action
+        let customBtn = UIButton(type: .Custom)
+        let customImage = UIImage(named: "SKPhotoBrowser.bundle/images/btn_common_report", inBundle: bundle, compatibleWithTraitCollection: nil) ?? UIImage()
+        customBtn.frame = CGRect(x: 0, y: 0, width: 44, height: 44)
+        //        customBtn.imageEdgeInsets = UIEdgeInsetsMake(13.25, 17.25, 13.25, 17.25)
+        customBtn.setImage(customImage, forState: .Normal)
+        customBtn.addTarget(self, action: Selector("handleCustomAction"), forControlEvents: .TouchUpInside)
+        customBtn.contentMode = .Center
+        bottomToolRightButton = UIBarButtonItem(customView: customBtn)
         
         // action button
         toolActionButton = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: #selector(SKPhotoBrowser.actionButtonPressed))
@@ -621,6 +659,26 @@ public class SKPhotoBrowser: UIViewController, UIScrollViewDelegate {
             height = 32
         }
         return CGRect(x: 0, y: view.bounds.size.height + height, width: view.bounds.size.width, height: height)
+    }
+    
+    public func frameForBottomToolbarAtOrientation() -> CGRect {
+        let currentOrientation = UIApplication.sharedApplication().statusBarOrientation
+        var height: CGFloat = navigationController?.navigationBar.frame.size.height ?? 44
+        if UIInterfaceOrientationIsLandscape(currentOrientation) {
+            height = 32
+        }
+        
+        return CGRect(x: 0, y: view.frame.size.height - height , width: view.bounds.size.width, height: height)
+    }
+    
+    public func frameForBottomToolbarHideAtOrientation() -> CGRect {
+        let currentOrientation = UIApplication.sharedApplication().statusBarOrientation
+        var height: CGFloat = navigationController?.navigationBar.frame.size.height ?? 44
+        if UIInterfaceOrientationIsLandscape(currentOrientation) {
+            height = 32
+        }
+        
+        return CGRect(x: 0, y: view.frame.size.height + height, width: view.bounds.size.width, height: height)
     }
     
     public func frameForCaptionView(captionView: SKCaptionView, index: Int) -> CGRect {
@@ -973,6 +1031,32 @@ public class SKPhotoBrowser: UIViewController, UIScrollViewDelegate {
         jumpToPageAtIndex(currentPageIndex + 1)
     }
     
+    public func saveImagesToPhotoAlbum() {
+        guard let savedImage = self.photoAtIndex(currentPageIndex).underlyingImage else {
+            return
+        }
+        UIImageWriteToSavedPhotosAlbum(savedImage, self, #selector(SKPhotoBrowser.image(_:didFinishSavingWithError:contextInfo:)), nil)
+    }
+    
+    public func image(image: UIImage, didFinishSavingWithError: NSError?, contextInfo: AnyObject) {
+        let message: String?
+        if didFinishSavingWithError != nil {
+            message = "图片保存失败"
+        } else {
+            message = "图片保存成功"
+        }
+        
+        let alertVC = UIAlertController.init(title: message, message: nil, preferredStyle: .Alert)
+        let okBtn = UIAlertAction.init(title: "确定", style: .Default, handler: nil)
+        alertVC.addAction(okBtn)
+        self.presentViewController(alertVC, animated: true, completion: nil)
+    }
+    
+    public func handleCustomAction() {
+        delegate?.didClickOnCustomBtn?(self, currentPhotoIndex: currentPageIndex)
+    }
+
+    
     public func tilePages() {
         let visibleBounds = pagingScrollView.bounds
         
@@ -1111,6 +1195,9 @@ public class SKPhotoBrowser: UIViewController, UIScrollViewDelegate {
                 let alpha: CGFloat = hidden ? 0.0 : 1.0
                 self.toolBar.alpha = alpha
                 self.toolBar.frame = hidden ? self.frameForToolbarHideAtOrientation() : self.frameForToolbarAtOrientation()
+                self.bottomToolBar.alpha = alpha
+                self.bottomToolBar.frame = hidden ? self.frameForBottomToolbarHideAtOrientation() : self.frameForBottomToolbarAtOrientation()
+                
                 if self.displayCloseButton == true {
                     self.closeButton.alpha = alpha
                     self.closeButton.frame = hidden ? self.closeButtonHideFrame : self.closeButtonShowFrame
@@ -1233,7 +1320,7 @@ public class SKPhotoBrowser: UIViewController, UIScrollViewDelegate {
     }
     
     public func scrollViewWillBeginDragging(scrollView: UIScrollView) {
-        setControlsHidden(true, animated: true, permanent: false)
+        setControlsHidden(false, animated: true, permanent: false)
     }
     
     public func scrollViewDidEndDecelerating(scrollView: UIScrollView) {

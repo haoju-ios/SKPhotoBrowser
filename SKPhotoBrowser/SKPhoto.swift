@@ -11,6 +11,7 @@ import UIKit
 public protocol SKPhotoProtocol: NSObjectProtocol {
     var underlyingImage: UIImage! { get }
     var caption: String! { get }
+    var title: String! { get }
     var index: Int? { get set}
     func loadUnderlyingImageAndNotify()
     func checkCache()
@@ -23,6 +24,7 @@ public class SKPhoto: NSObject, SKPhotoProtocol {
     public var photoURL: String!
     public var shouldCachePhotoURLImage: Bool = false
     public var caption: String!
+    public var title: String!
     public var index: Int?
 
     override init() {
