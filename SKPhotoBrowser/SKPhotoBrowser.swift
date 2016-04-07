@@ -337,7 +337,7 @@ public class SKPhotoBrowser: UIViewController, UIScrollViewDelegate {
         saveImagesBtn.frame = CGRect(x: 0, y: 0, width: 44, height: 44)
         //        saveImagesBtn.imageEdgeInsets = UIEdgeInsetsMake(13.25, 17.25, 13.25, 17.25)
         saveImagesBtn.setImage(saveImagesImage, forState: .Normal)
-        saveImagesBtn.addTarget(self, action: Selector("saveImagesToPhotoAlbum"), forControlEvents: .TouchUpInside)
+        saveImagesBtn.addTarget(self, action: #selector(SKPhotoBrowser.saveImagesToPhotoAlbum), forControlEvents: .TouchUpInside)
         saveImagesBtn.contentMode = .Center
         bottomToolCenterButton = UIBarButtonItem(customView: saveImagesBtn)
         
@@ -347,7 +347,7 @@ public class SKPhotoBrowser: UIViewController, UIScrollViewDelegate {
         customBtn.frame = CGRect(x: 0, y: 0, width: 44, height: 44)
         //        customBtn.imageEdgeInsets = UIEdgeInsetsMake(13.25, 17.25, 13.25, 17.25)
         customBtn.setImage(customImage, forState: .Normal)
-        customBtn.addTarget(self, action: Selector("handleCustomAction"), forControlEvents: .TouchUpInside)
+        customBtn.addTarget(self, action: #selector(SKPhotoBrowser.handleCustomAction), forControlEvents: .TouchUpInside)
         customBtn.contentMode = .Center
         bottomToolRightButton = UIBarButtonItem(customView: customBtn)
         
