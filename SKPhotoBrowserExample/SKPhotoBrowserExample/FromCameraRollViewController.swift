@@ -10,13 +10,13 @@ import UIKit
 import Photos
 import SKPhotoBrowser
 
-class CameraRollViewController: UIViewController, SKPhotoBrowserDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
+class FromCameraRollViewController: UIViewController, SKPhotoBrowserDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
 
     @IBOutlet weak var collectionView: UICollectionView!
     
     private let imageManager = PHCachingImageManager.defaultManager()
     
-    private var assets:[PHAsset] = []
+    private var assets: [PHAsset] = []
     
     private lazy var requestOptions: PHImageRequestOptions = {
         let options = PHImageRequestOptions()
@@ -100,21 +100,20 @@ class CameraRollViewController: UIViewController, SKPhotoBrowserDelegate, UIColl
             return
         }
         
-        func open(images:[UIImage]) {
+        func open(images: [UIImage]) {
             
-            let photoImages:[SKPhoto] = images.map({ return SKPhoto.photoWithImage($0) })
+            let photoImages: [SKPhotoProtocol] = images.map({ return SKPhoto.photoWithImage($0) })
             let browser = SKPhotoBrowser(originImage: cell.exampleImageView.image!, photos: photoImages, animatedFromView: cell)
             
             browser.initializePageIndex(indexPath.row)
             browser.delegate = self
-            browser.bounceAnimation = true
-            browser.displayDeleteButton = true
-            browser.displayAction = false
-            browser.statusBarStyle = .LightContent
+//            browser.bounceAnimation = true
+//            browser.displayDeleteButton = true
+//            browser.displayAction = false
             self.presentViewController(browser, animated: true, completion: {})
         }
         
-        var fetchedImages:[UIImage] = Array<UIImage>(count: assets.count, repeatedValue: UIImage())
+        var fetchedImages: [UIImage] = Array<UIImage>(count: assets.count, repeatedValue: UIImage())
         var fetched = 0
         
         assets.forEach { (asset) -> () in
@@ -148,10 +147,10 @@ class CameraRollViewController: UIViewController, SKPhotoBrowserDelegate, UIColl
         self.assets = result.objectsAtIndexes(NSIndexSet(indexesInRange: NSRange(location: 0, length: amount))) as? [PHAsset] ?? []
     }
     
-    private func requestImageForAsset(asset: PHAsset, options:PHImageRequestOptions, completion: (image: UIImage?, requestId:PHImageRequestID?) -> ()) -> PHImageRequestID {
+    private func requestImageForAsset(asset: PHAsset, options: PHImageRequestOptions, completion: (image: UIImage?, requestId: PHImageRequestID?) -> ()) -> PHImageRequestID {
         
         let scale = UIScreen.mainScreen().scale
-        let targetSize:CGSize
+        let targetSize: CGSize
         
         if options.deliveryMode == .HighQualityFormat {
             targetSize = CGSize(width: 600 * scale, height: 600 * scale)
@@ -168,8 +167,7 @@ class CameraRollViewController: UIViewController, SKPhotoBrowserDelegate, UIColl
                 let requestId = dict?[PHImageResultRequestIDKey] as? NSNumber
                 completion(image: image, requestId: requestId?.intValue)
             }
-        }
-        else {
+        } else {
             return imageManager.requestImageForAsset(asset, targetSize: targetSize, contentMode: .AspectFill, options: options) { image, dict in
                 let requestId = dict?[PHImageResultRequestIDKey] as? NSNumber
                 completion(image: image, requestId: requestId?.intValue)
@@ -186,8 +184,6 @@ class CameraRollViewController: UIViewController, SKPhotoBrowserDelegate, UIColl
     }
 }
 
-class AssetExampleCollectionViewCell : ExampleCollectionViewCell {
-    
-    var requestId:PHImageRequestID?
-    
+class AssetExampleCollectionViewCell: ExampleCollectionViewCell {
+    var requestId: PHImageRequestID?
 }
