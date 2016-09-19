@@ -11,6 +11,7 @@ import UIKit
 public class SKCaptionView: UIView {
     private var photo: SKPhotoProtocol?
     private var photoLabel: UILabel!
+    private var photoTitle: UILabel!
     private var photoLabelPadding: CGFloat = 10
     
     required public init?(coder aDecoder: NSCoder) {
@@ -57,7 +58,24 @@ private extension SKCaptionView {
     }
     
     func setupPhotoLabel() {
-        photoLabel = UILabel(frame: CGRect(x: photoLabelPadding, y: 0, width: bounds.size.width - (photoLabelPadding * 2), height: bounds.size.height))
+        photoTitle = UILabel.init(frame: CGRectMake(photoLabelPadding, 0, bounds.size.width - (photoLabelPadding * 2), 22))
+        photoTitle.backgroundColor = UIColor.greenColor()
+        photoTitle.opaque = false
+        photoTitle.backgroundColor = .clearColor()
+        photoTitle.textColor = .whiteColor()
+        photoTitle.textAlignment = .Left
+        photoTitle.lineBreakMode = .ByTruncatingTail
+        photoTitle.numberOfLines = 1
+        photoTitle.shadowColor = UIColor(white: 0.0, alpha: 0.5)
+        photoTitle.shadowOffset = CGSize(width: 0.0, height: 1.0)
+        photoTitle.font = UIFont.boldSystemFontOfSize(20.0)
+        if let tit  = photo!.title {
+            photoTitle.text = tit
+        }
+        addSubview(photoTitle)
+        
+        photoLabel = UILabel(frame: CGRect(x: photoLabelPadding, y: photoTitle.frame.size.height + photoLabelPadding,
+            width: bounds.size.width - (photoLabelPadding * 2), height: bounds.size.height - photoTitle.frame.size.height - photoLabelPadding))
         photoLabel.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
         photoLabel.opaque = false
         photoLabel.backgroundColor = .clearColor()

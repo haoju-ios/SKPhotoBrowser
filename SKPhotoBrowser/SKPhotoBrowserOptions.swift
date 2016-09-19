@@ -9,13 +9,14 @@
 import Foundation
 
 public struct SKPhotoBrowserOptions {
-    public static var displayAction: Bool = true
+    public static var displayAction: Bool = false
     public static var shareExtraCaption: String? = nil
     public static var actionButtonTitles: [String]?
     
     public static var displayToolbar: Bool = true
+    public static var displayBottomToolbar: Bool = false
     public static var displayCounterLabel: Bool = true
-    public static var displayBackAndForwardButton: Bool = true
+    public static var displayBackAndForwardButton: Bool = false
     public static var disableVerticalSwipe: Bool = false
     
     public static var displayCloseButton = true
