@@ -71,5 +71,7 @@ import Foundation
      - Returns: the view to animate to
      */
     @objc optional func viewForPhoto(_ browser: SKPhotoBrowser, index: Int) -> UIView?
+    
+    @objc optional func didClickOnCustomBtn(photoBrowser: SKPhotoBrowser,currentPhotoIndex: Int )
 }
 

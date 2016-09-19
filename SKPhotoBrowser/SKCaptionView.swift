@@ -31,6 +31,7 @@ fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
 open class SKCaptionView: UIView {
     fileprivate var photo: SKPhotoProtocol?
     fileprivate var photoLabel: UILabel!
+    fileprivate var photoTitle: UILabel!
     fileprivate var photoLabelPadding: CGFloat = 10
     
     required public init?(coder aDecoder: NSCoder) {
@@ -77,11 +78,28 @@ private extension SKCaptionView {
     }
     
     func setupPhotoLabel() {
-        photoLabel = UILabel(frame: CGRect(x: photoLabelPadding, y: 0, width: bounds.size.width - (photoLabelPadding * 2), height: bounds.size.height))
+        photoTitle = UILabel.init(frame: CGRect(x: photoLabelPadding, y: 0, width: bounds.size.width - (photoLabelPadding * 2), height: 22))
+        photoTitle.backgroundColor = UIColor.green
+        photoTitle.isOpaque = false
+        photoTitle.backgroundColor = .clear
+        photoTitle.textColor = .white
+        photoTitle.textAlignment = .left
+        photoTitle.lineBreakMode = .byTruncatingTail
+        photoTitle.numberOfLines = 1
+        photoTitle.shadowColor = UIColor(white: 0.0, alpha: 0.5)
+        photoTitle.shadowOffset = CGSize(width: 0.0, height: 1.0)
+        photoTitle.font = UIFont.boldSystemFont(ofSize: 20.0)
+        if let tit  = photo!.title {
+            photoTitle.text = tit
+        }
+        addSubview(photoTitle)
+        
+        photoLabel = UILabel(frame: CGRect(x: photoLabelPadding, y: photoTitle.frame.size.height + photoLabelPadding,
+                                           width: bounds.size.width - (photoLabelPadding * 2), height: bounds.size.height - photoTitle.frame.size.height - photoLabelPadding))
         photoLabel.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         photoLabel.isOpaque = false
-        photoLabel.backgroundColor = UIColor.clear
-        photoLabel.textColor = UIColor.white
+        photoLabel.backgroundColor = .clear
+        photoLabel.textColor = .white
         photoLabel.textAlignment = .center
         photoLabel.lineBreakMode = .byTruncatingTail
         photoLabel.numberOfLines = 3

@@ -18,6 +18,7 @@ open class SKPhotoBrowser: UIViewController {
     fileprivate var closeButton: SKCloseButton!
     fileprivate var deleteButton: SKDeleteButton!
     fileprivate var toolbar: SKToolbar!
+    fileprivate var bottomToolbar: SKBottomToolbar!
     
     // actions
     fileprivate var activityViewController: UIActivityViewController!
@@ -106,10 +107,11 @@ open class SKPhotoBrowser: UIViewController {
         super.viewDidLoad()
         
         configureAppearance()
-        configureCloseButton()
         configureDeleteButton()
         configureToolbar()
-        
+        configureBottomToolbar()
+        configureCloseButton()
+
         animator.willPresent(self)
     }
 
@@ -134,7 +136,7 @@ open class SKPhotoBrowser: UIViewController {
         pagingScrollView.updateFrame(view.bounds, currentPageIndex: currentPageIndex)
         
         toolbar.frame = frameForToolbarAtOrientation()
-        
+        bottomToolbar.frame = frameForBottomToolbarAtOrientation()
         // where did start
         delegate?.didShowPhotoAtIndex?(currentPageIndex)
         
@@ -290,6 +292,32 @@ public extension SKPhotoBrowser {
         jumpToPageAtIndex(currentPageIndex + 1)
     }
     
+    func saveImagesToPhotoAlbum() {
+        guard let savedImage = self.photoAtIndex(currentPageIndex).underlyingImage else {
+            return
+        }
+        UIImageWriteToSavedPhotosAlbum(savedImage, self, #selector(SKPhotoBrowser.image(image:didFinishSavingWithError:contextInfo:)), nil)
+    }
+    
+    func image(image: UIImage, didFinishSavingWithError: NSError?, contextInfo: AnyObject) {
+        let message: String?
+        if didFinishSavingWithError != nil {
+            message = "图片保存失败"
+        } else {
+            message = "图片保存成功"
+        }
+        
+        let alertVC = UIAlertController.init(title: message, message: nil, preferredStyle: .alert)
+        let okBtn = UIAlertAction.init(title: "确定", style: .default, handler: nil)
+        alertVC.addAction(okBtn)
+        self.present(alertVC, animated: true, completion: nil)
+    }
+    
+    func handleCustomAction() {
+        delegate?.didClickOnCustomBtn?(photoBrowser: self, currentPhotoIndex: currentPageIndex)
+    }
+
+    
     func cancelControlHiding() {
         if controlVisibilityTimer != nil {
             controlVisibilityTimer.invalidate()
@@ -389,7 +417,7 @@ internal extension SKPhotoBrowser {
         if UIInterfaceOrientationIsLandscape(currentOrientation) {
             height = 32
         }
-        return CGRect(x: 0, y: view.bounds.size.height - height, width: view.bounds.size.width, height: height)
+        return CGRect(x: 0, y: 5, width: view.bounds.size.width, height: height)
     }
     
     func frameForToolbarHideAtOrientation() -> CGRect {
@@ -398,7 +426,26 @@ internal extension SKPhotoBrowser {
         if UIInterfaceOrientationIsLandscape(currentOrientation) {
             height = 32
         }
-        return CGRect(x: 0, y: view.bounds.size.height + height, width: view.bounds.size.width, height: height)
+        return CGRect(x: 0, y: -20, width: view.bounds.size.width, height: height)
+    }
+    
+    func frameForBottomToolbarAtOrientation() -> CGRect {
+        let currentOrientation = UIApplication.shared.statusBarOrientation
+        var height: CGFloat = navigationController?.navigationBar.frame.size.height ?? 44
+        if UIInterfaceOrientationIsLandscape(currentOrientation) {
+            height = 32
+        }
+        
+        return CGRect(x: 0, y: view.frame.size.height - height , width: view.bounds.size.width, height: height)
+    }
+    
+    func frameForBottomToolbarHideAtOrientation() -> CGRect {
+        let currentOrientation = UIApplication.shared.statusBarOrientation
+        var height: CGFloat = navigationController?.navigationBar.frame.size.height ?? 44
+        if UIInterfaceOrientationIsLandscape(currentOrientation) {
+            height = 32
+        }
+        return CGRect(x: 0, y: view.frame.size.height + height, width: view.bounds.size.width, height: height)
     }
     
     func frameForPageAtIndex(_ index: Int) -> CGRect {
@@ -561,6 +608,11 @@ private extension SKPhotoBrowser {
         view.addSubview(toolbar)
     }
     
+    func configureBottomToolbar() {
+        bottomToolbar = SKBottomToolbar(frame: frameForBottomToolbarAtOrientation(), browser: self)
+        view.addSubview(bottomToolbar)
+    }
+    
     func setControlsHidden(_ hidden: Bool, animated: Bool, permanent: Bool) {
         cancelControlHiding()
         
@@ -571,6 +623,9 @@ private extension SKPhotoBrowser {
                 let alpha: CGFloat = hidden ? 0.0 : 1.0
                 self.toolbar.alpha = alpha
                 self.toolbar.frame = hidden ? self.frameForToolbarHideAtOrientation() : self.frameForToolbarAtOrientation()
+                
+                self.bottomToolbar.alpha = alpha
+                self.bottomToolbar.frame = hidden ? self.frameForBottomToolbarHideAtOrientation() : self.frameForBottomToolbarAtOrientation()
                 
                 if SKPhotoBrowserOptions.displayCloseButton {
                     self.closeButton.alpha = alpha
