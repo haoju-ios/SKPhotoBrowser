@@ -31,7 +31,7 @@ class SKBottomToolbar: UIToolbar {
         setupApperance()
         setupCenterButton()
         setupRightButton()
-        setupToolbar()
+        setupBottomToolbar()
     }
 }
 
@@ -48,7 +48,7 @@ private extension SKBottomToolbar {
         }
     }
     
-    func setupToolbar() {
+    func setupBottomToolbar() {
         guard browser != nil else { return }
         
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: self, action: nil)
@@ -67,7 +67,7 @@ private extension SKBottomToolbar {
     }
     
     func setupRightButton() {
-        let rightButton = SKNextButton(frame: frame)
+        let rightButton = SKRightButton(frame: frame)
         rightButton.addTarget(browser, action: #selector(SKPhotoBrowser.handleCustomAction), for: .touchUpInside)
         bottomToolRightButton = UIBarButtonItem(customView: rightButton)
     }
